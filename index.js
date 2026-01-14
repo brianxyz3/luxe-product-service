@@ -56,7 +56,7 @@ app.get("/api/products/:productId", async (req, res) => {
 });
 
 app.get("/health", async (req, res) => {
-  console.log("Healthy")
+  console.log("Product Service is Healthy")
   res.status(200).json()
 });
 
