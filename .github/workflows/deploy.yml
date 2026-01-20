@@ -3,15 +3,16 @@ name: Deploy to Amazon ECS
 on:
   push:
     branches: [ "main" ]
+    paths-ignore: [ "*.md", ".github/**" ]
 
 env:
-  AWS_REGION: eu-west-1                   # Set your AWS region
-  SERVICE_ECR: product-repo           # Your Amazon ECR repo name
+  AWS_REGION: eu-west-1
+  SERVICE_ECR: product-repo
   ECR_REPOSITORY: 849349795052.dkr.ecr.eu-west-1.amazonaws.com/luxe-ecommerce-product-repo
-  ECS_SERVICE: luxe-ecommerce-product-prod-service              # Your existing ECS service name
-  ECS_CLUSTER: luxe-ecommerce-cluster          # Your existing ECS cluster name
-  ECS_TASK_DEFINITION_FAMILY: luxe-ecommerce-product-prod-task  # Path to your task definition file
-  CONTAINER_NAME: luxe-ecommerce-product            # Name of the container in the task definition
+  ECS_SERVICE: luxe-ecommerce-product-prod-service
+  ECS_CLUSTER: luxe-ecommerce-cluster
+  ECS_TASK_DEFINITION_FAMILY: luxe-ecommerce-product-prod-task
+  CONTAINER_NAME: luxe-ecommerce-product
 
 
 permissions:
@@ -53,7 +54,7 @@ jobs:
         id: render-task
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          # This tells the action to fetch the latest active revision from AWS
+          # fetch the latest active revision from AWS
           task-definition-family: ${{ env.ECS_TASK_DEFINITION_FAMILY }}
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.build-image.outputs.image }}
@@ -65,45 +66,3 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
-
-
-
-
-
-          
-# uses: aws-actions/amazon-ecr-login@v2
-
-
-
-
-      # - name: Fetch and Update Task Definition
-      #   id: update-task-def
-      #   with:
-      #     task-definition: ${{ env.ECS_TASK_DEFINITION }}
-      #     container-name: ${{ env.CONTAINER_NAME }}
-      #     image: ${{ steps.build-image.outputs.image }}
-      #   run: |
-      #     ## Fetch the latest active revision for your task family
-      #     aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION_FAMILY }} \
-      #      --query 'taskDefinition' > task-def.json
-          
-      #     ## Use 'jq' to update the image in the containerDefinitions array and save json
-      #     jq --arg IMAGE "${{ steps.build-image.outputs.image }}" \
-      #        '(.containerDefinitions[] | select(.name=="${{ env.CONTAINER_NAME }}") | .image) = $IMAGE' \
-      #        task-def.json > updated-task-def.json
-          
-      #     ## Clean the JSON (remove metadata that AWS won't accept in a new registration)
-      #     jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' \
-      #        updated-task-def.json > final-task-def.json
-
-      #     ## save new task definition as step output
-      #     echo "task-definition=final-task-def.json" >> $GITHUB_OUTPUT
-
-      # - name: Deploy Amazon ECS task definition
-      #   uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-      #   with:
-      #     task-definition: final-task-def.json
-      #     service: ${{ env.ECS_SERVICE }}
-      #     cluster: ${{ env.ECS_CLUSTER }}
-      #     wait-for-service-stability: true
-          
